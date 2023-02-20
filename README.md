@@ -6,5 +6,5 @@ Using data from:
 * Mask RCNN 2.1, MS Coco
 * Data training from TechVidvan
 
-###Thanks to:
+### Thanks to:
 TechVidvan
