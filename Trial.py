@@ -14,11 +14,14 @@ net = cv2.dnn.readNetFromTensorflow("asset/frozen_inference_graph_coco.pb",
 classesFile = "coco.names"
 classNames = open(classesFile).read().strip().split('\n')
 
+# Set up the Streamlit app
 st.set_page_config(page_title='Test Image Segementation')
-st.markdown('Mencoba image segmentation menggunakan Masking.')
-st.markdown('Masukkan gambar yang disegmentasi:')
+st.title('Image Segmentation with Masking')
+
+# Allow the user to upload an image
 uploaded_file = st.file_uploader("Upload Image", type=['jpg', 'jpeg', 'png'])
 
+# Perform segmentation on the uploaded image
 if uploaded_file is not None:
     # Load image
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
@@ -28,7 +31,6 @@ if uploaded_file is not None:
 
     # Create black image
     blank_mask = np.zeros((height, width, 3), np.uint8)
-    blank_mask[:] = (0, 0, 0)
 
     # Create blob from the image
     blob = cv2.dnn.blobFromImage(img, swapRB=True)
@@ -37,7 +39,6 @@ if uploaded_file is not None:
     net.setInput(blob)
     boxes, masks = net.forward(["detection_out_final", "detection_masks"])
     detection_count = boxes.shape[2]
-    count = 0
     for i in range(detection_count):
         # Extract information from detection
         box = boxes[0, 0, i]
@@ -73,13 +74,8 @@ if uploaded_file is not None:
                     (255, 100, 120), thickness=2)
 
     # Add mask to image with alpha blending
-    # alpha is the transparency of the first picture, beta is the transparency of the second picture
-    alpha, beta = 1, 0.8
-    mask_img = cv2.addWeighted(img, alpha, blank_mask, beta, 0)
+    mask_img = cv2.addWeighted(img, 1, blank_mask, 0.8, 0)
 
     # Display the final image in a matplotlib window
-    plt.imshow(cv2.cvtColor(mask_img, cv2.COLOR_BGR2RGB))
-    plt.show()
+    st.image(cv2.cvtColor(mask_img, cv2.COLOR_BGR2RGB))
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
